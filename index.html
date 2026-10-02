@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Admin Portal | Student Management System</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#1e40af', // Blue-800
+                        secondary: '#475569', // Slate-600
+                        accent: '#3b82f6', // Blue-500
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Hide elements utility */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center fade-in">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+                    <i class="fas fa-university text-3xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">University Portal</h1>
+                <p class="text-gray-500 text-sm mt-1">Student Management System</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="login-username" value="admin" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="login-password" value="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-900 transition-colors mt-4">
+                    Login to Dashboard
+                </button>
+                <p class="text-xs text-center text-gray-400 mt-4">Simulation: Click login to proceed as Admin</p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="flex w-full h-full hidden">
+        
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col h-full shrink-0 shadow-xl z-10">
+            <div class="p-6 flex items-center gap-3 bg-slate-950">
+                <i class="fas fa-graduation-cap text-accent text-2xl"></i>
+                <span class="text-xl font-bold text-white tracking-wide">EduManage</span>
+            </div>
+            
+            <nav class="flex-1 py-4 flex flex-col gap-1 overflow-y-auto">
+                <a href="#" data-target="view-dashboard" class="nav-link px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-r-4 border-transparent flex items-center gap-3">
+                    <i class="fas fa-chart-pie w-5"></i> Dashboard
+                </a>
+                <a href="#" data-target="view-students" class="nav-link px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-r-4 border-transparent flex items-center gap-3">
+                    <i class="fas fa-users w-5"></i> Students
+                </a>
+                <a href="#" data-target="view-courses" class="nav-link px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-r-4 border-transparent flex items-center gap-3">
+                    <i class="fas fa-book w-5"></i> Courses & Enroll
+                </a>
+                <a href="#" data-target="view-attendance" class="nav-link px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-r-4 border-transparent flex items-center gap-3">
+                    <i class="fas fa-clipboard-user w-5"></i> Attendance
+                </a>
+                <a href="#" data-target="view-marks" class="nav-link px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-r-4 border-transparent flex items-center gap-3">
+                    <i class="fas fa-star w-5"></i> Marks & Results
+                </a>
+            </nav>
+            
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center gap-3 mb-4 px-2">
+                    <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold text-white">A</div>
+                    <div class="text-sm">
+                        <p class="text-white font-medium">Administrator</p>
+                        <p class="text-xs text-slate-500 truncate" id="user-id-display">Connecting...</p>
+                    </div>
+                </div>
+                <button id="btn-logout" class="w-full text-left px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full bg-gray-50 overflow-hidden relative">
+            <!-- Header -->
+            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-8 shrink-0 z-10">
+                <h2 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard</h2>
+                <div class="text-sm text-gray-500" id="current-date"></div>
+            </header>
+
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto p-8 relative">
+                
+                <!-- Toast Notification Container -->
+                <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+
+                <!-- VIEW: Dashboard -->
+                <div id="view-dashboard" class="app-view fade-in">
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Total Students</p>
+                                    <h3 class="text-3xl font-bold text-gray-800 mt-1" id="stat-students">0</h3>
+                                </div>
+                                <div class="p-2 bg-blue-50 rounded-lg text-blue-500"><i class="fas fa-user-graduate text-xl"></i></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-purple-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Active Courses</p>
+                                    <h3 class="text-3xl font-bold text-gray-800 mt-1" id="stat-courses">0</h3>
+                                </div>
+                                <div class="p-2 bg-purple-50 rounded-lg text-purple-500"><i class="fas fa-book-open text-xl"></i></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Enrollments</p>
+                                    <h3 class="text-3xl font-bold text-gray-800 mt-1" id="stat-enrollments">0</h3>
+                                </div>
+                                <div class="p-2 bg-green-50 rounded-lg text-green-500"><i class="fas fa-link text-xl"></i></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-orange-500">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">System Status</p>
+                                    <h3 class="text-xl font-bold text-gray-800 mt-2 text-green-600">Online</h3>
+                                </div>
+                                <div class="p-2 bg-orange-50 rounded-lg text-orange-500"><i class="fas fa-server text-xl"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity (Simulated from actual data) -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                            <h3 class="font-semibold text-gray-800">Recent Enrollments</h3>
+                        </div>
+                        <div class="p-0">
+                            <table class="w-full text-left text-sm">
+                                <thead class="text-xs text-gray-500 bg-gray-50 uppercase">
+                                    <tr>
+                                        <th class="px-6 py-3 font-medium">Student</th>
+                                        <th class="px-6 py-3 font-medium">Course</th>
+                                        <th class="px-6 py-3 font-medium">Semester</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-enrollments-list" class="divide-y divide-gray-100">
+                                    <tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">Loading data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: Students -->
+                <div id="view-students" class="app-view hidden fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="relative w-64">
+                            <input type="text" id="search-student" placeholder="Search students..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+                        </div>
+                        <button onclick="openModal('modal-student')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Add Student
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="text-xs text-gray-500 bg-gray-50 uppercase border-b border-gray-100">
+                                    <tr>
+                                        <th class="px-6 py-4 font-medium">ID / Name</th>
+                                        <th class="px-6 py-4 font-medium">Contact</th>
+                                        <th class="px-6 py-4 font-medium">Department</th>
+                                        <th class="px-6 py-4 font-medium">Semester</th>
+                                        <th class="px-6 py-4 font-medium text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-students" class="divide-y divide-gray-50">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: Courses -->
+                <div id="view-courses" class="app-view hidden fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        
+                        <!-- Courses List -->
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Course Catalog</h3>
+                                <button onclick="openModal('modal-course')" class="bg-primary hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                                    <i class="fas fa-plus"></i> Add Course
+                                </button>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="text-xs text-gray-500 bg-gray-50 uppercase border-b border-gray-100">
+                                        <tr>
+                                            <th class="px-4 py-3 font-medium">Code</th>
+                                            <th class="px-4 py-3 font-medium">Name</th>
+                                            <th class="px-4 py-3 font-medium">Credits</th>
+                                            <th class="px-4 py-3 font-medium text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-courses" class="divide-y divide-gray-50">
+                                        <!-- Rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Enrollments -->
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Student Enrollments</h3>
+                                <button onclick="openModal('modal-enrollment')" class="bg-accent hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                                    <i class="fas fa-link"></i> New Enrollment
+                                </button>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="text-xs text-gray-500 bg-gray-50 uppercase border-b border-gray-100">
+                                        <tr>
+                                            <th class="px-4 py-3 font-medium">Student</th>
+                                            <th class="px-4 py-3 font-medium">Course</th>
+                                            <th class="px-4 py-3 font-medium">Sem</th>
+                                            <th class="px-4 py-3 font-medium text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-enrollments" class="divide-y divide-gray-50">
+                                        <!-- Rendered dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- VIEW: Attendance -->
+                <div id="view-attendance" class="app-view hidden fade-in">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Mark Attendance</h3>
+                        <form id="form-attendance" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Date</label>
+                                <input type="date" id="att-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Course</label>
+                                <select id="att-course" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white" required>
+                                    <option value="">Select Course...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Student</label>
+                                <select id="att-student" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:border-blue-500 bg-white" required>
+                                    <option value="">Select Student...</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="submitAttendance('Present')" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                                    Present
+                                </button>
+                                <button type="button" onclick="submitAttendance('Absent')" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg text-sm font-medium transition-colors">
+                                    Absent
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                            <h3 class="font-semibold text-gray-800">Attendance Records</h3>
+                        </div>
+                        <table class="w-full text-left text-sm">
+                            <thead class="text-xs text-gray-500 bg-gray-50 uppercase border-b border-gray-100">
+                                <tr>
+                                    <th class="px-6 py-3 font-medium">Date</th>
+                                    <th class="px-6 py-3 font-medium">Student</th>
+                                    <th class="px-6 py-3 font-medium">Course</th>
+                                    <th class="px-6 py-3 font-medium">Status</th>
+                                    <th class="px-6 py-3 font-medium text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-attendance" class="divide-y divide-gray-50">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW: Marks -->
+                <div id="view-marks" class="app-view hidden fade-in">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800">Academic Results</h3>
+                        <button onclick="openModal('modal-marks')" class="bg-primary hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
+                            <i class="fas fa-award"></i> Add Marks
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                            <thead class="text-xs text-gray-500 bg-gray-50 uppercase border-b border-gray-100">
+                                <tr>
+                                    <th class="px-6 py-3 font-medium">Student</th>
+                                    <th class="px-6 py-3 font-medium">Course</th>
+                                    <th class="px-6 py-3 font-medium text-center">Internal (40)</th>
+                                    <th class="px-6 py-3 font-medium text-center">Exam (60)</th>
+                                    <th class="px-6 py-3 font-medium text-center">Total (100)</th>
+                                    <th class="px-6 py-3 font-medium text-center">Grade</th>
+                                    <th class="px-6 py-3 font-medium text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-marks" class="divide-y divide-gray-50">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODALS OVERLAYS -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        
+        <!-- Student Modal -->
+        <div id="modal-student" class="bg-white rounded-xl shadow-2xl w-full max-w-lg hidden transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900" id="modal-student-title">Add New Student</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-student" class="p-6 space-y-4">
+                <input type="hidden" id="student-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="std-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" id="std-email" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                        <input type="text" id="std-phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                        <select id="std-dept" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 bg-white" required>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Mechanical Eng">Mechanical Eng</option>
+                            <option value="Electrical Eng">Electrical Eng</option>
+                            <option value="Business Admin">Business Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                        <select id="std-sem" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 bg-white" required>
+                            <option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option>
+                            <option value="S4">S4</option><option value="S5">S5</option><option value="S6">S6</option>
+                            <option value="S7">S7</option><option value="S8">S8</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-blue-800 rounded-lg">Save Student</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Course Modal -->
+        <div id="modal-course" class="bg-white rounded-xl shadow-2xl w-full max-w-md hidden transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900">Add New Course</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-course" class="p-6 space-y-4">
+                <input type="hidden" id="course-id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Course Code</label>
+                    <input type="text" id="crs-code" placeholder="e.g. CS101" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 uppercase" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+                    <input type="text" id="crs-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Credits</label>
+                    <input type="number" id="crs-credits" min="1" max="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500" required>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-blue-800 rounded-lg">Save Course</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Enrollment Modal -->
+        <div id="modal-enrollment" class="bg-white rounded-xl shadow-2xl w-full max-w-md hidden transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900">Enroll Student</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-enrollment" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
+                    <select id="enr-student" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 bg-white" required></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Course</label>
+                    <select id="enr-course" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 bg-white" required></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                    <select id="enr-sem" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 bg-white" required>
+                        <option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option>
+                        <option value="S4">S4</option><option value="S5">S5</option><option value="S6">S6</option>
+                        <option value="S7">S7</option><option value="S8">S8</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-accent hover:bg-blue-600 rounded-lg">Enroll</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Marks Modal -->
+        <div id="modal-marks" class="bg-white rounded-xl shadow-2xl w-full max-w-md hidden transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900">Add/Update Marks</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="form-marks" class="p-6 space-y-4">
+                <input type="hidden" id="mark-id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Student</label>
+                    <select id="mrk-student" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 bg-white" required></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Course</label>
+                    <select id="mrk-course" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 bg-white" required></select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Internal (Max 40)</label>
+                        <input type="number" id="mrk-internal" min="0" max="40" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Exam (Max 60)</label>
+                        <input type="number" id="mrk-exam" min="0" max="60" class="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500" required>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <button type="button" onclick="closeModals()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-blue-800 rounded-lg">Save Marks</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration & Initialization
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-sms-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        
+        // Only initialize if we have config, otherwise create dummy config for local testing UI
+        const app = Object.keys(firebaseConfig).length > 0 ? initializeApp(firebaseConfig) : null;
+        const db = app ? getFirestore(app) : null;
+        const auth = app ? getAuth(app) : null;
+
+        // State Management Arrays
+        let studentsData = [];
+        let coursesData = [];
+        let enrollmentsData = [];
+        let attendanceData = [];
+        let marksData = [];
+        let currentUserId = null;
+
+        // Date helper
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('att-date').valueAsDate = new Date(); // default attendance date
+
+        // Login Logic
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if(!app) {
+                showToast("Firebase configuration missing. Running in UI-only mode.", "warning");
+                initLocalFallback();
+                return;
+            }
+
+            try {
+                const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialToken) {
+                    await signInWithCustomToken(auth, initialToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                currentUserId = auth.currentUser.uid;
+                document.getElementById('user-id-display').innerText = currentUserId;
+                
+                // Hide Login, Show App
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                
+                showToast("Successfully logged in as Admin", "success");
+                
+                // Initialize Data Listeners
+                initFirestoreListeners();
+                
+            } catch (error) {
+                console.error("Auth Error:", error);
+                showToast("Authentication failed: " + error.message, "error");
+            }
+        });
+
+        // Logout
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            if(auth) await signOut(auth);
+            window.location.reload();
+        });
+
+        
+        // Helper to get correct mandatory path rule: /artifacts/{appId}/public/data/{collectionName}
+        const getColRef = (colName) => collection(db, 'artifacts', appId, 'public', 'data', colName);
+        const getDocRef = (colName, id) => doc(db, 'artifacts', appId, 'public', 'data', colName, id);
+
+        function initFirestoreListeners() {
+            if (!currentUserId) return; // Guard clause for auth
+
+            // 1. Students Listener
+            onSnapshot(getColRef('students'), (snapshot) => {
+                studentsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateSelectDropdowns();
+                renderStudents();
+                updateDashboardStats();
+            }, (error) => showToast("Error loading students", "error"));
+
+            // 2. Courses Listener
+            onSnapshot(getColRef('courses'), (snapshot) => {
+                coursesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateSelectDropdowns();
+                renderCourses();
+                updateDashboardStats();
+            }, (error) => showToast("Error loading courses", "error"));
+
+            // 3. Enrollments Listener
+            onSnapshot(getColRef('enrollments'), (snapshot) => {
+                enrollmentsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderEnrollments();
+                updateDashboardStats();
+            }, (error) => showToast("Error loading enrollments", "error"));
+
+            // 4. Attendance Listener
+            onSnapshot(getColRef('attendance'), (snapshot) => {
+                attendanceData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => new Date(b.date) - new Date(a.date));
+                renderAttendance();
+            }, (error) => showToast("Error loading attendance", "error"));
+
+            // 5. Marks Listener
+            onSnapshot(getColRef('marks'), (snapshot) => {
+                marksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderMarks();
+            }, (error) => showToast("Error loading marks", "error"));
+        }
+
+        
+        // Navigation Logic
+        const navLinks = document.querySelectorAll('.nav-link');
+        const views = document.querySelectorAll('.app-view');
+        const pageTitle = document.getElementById('page-title');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('data-target');
+                
+                // Update active state
+                navLinks.forEach(l => {
+                    l.classList.remove('border-blue-500', 'text-white', 'bg-slate-800');
+                    l.classList.add('border-transparent');
+                });
+                link.classList.remove('border-transparent');
+                link.classList.add('border-blue-500', 'text-white', 'bg-slate-800');
+                
+                // Title update
+                pageTitle.innerText = link.innerText.trim();
+
+                // View switching
+                views.forEach(v => v.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+            });
+        });
+
+        // Set initial active nav
+        navLinks[0].classList.add('border-blue-500', 'text-white', 'bg-slate-800');
+        navLinks[0].classList.remove('border-transparent');
+
+        // Render Helpers
+        function getStudentName(id) {
+            const s = studentsData.find(s => s.id === id);
+            return s ? s.name : '<span class="text-red-400">Deleted Student</span>';
+        }
+
+        function getCourseName(id) {
+            const c = coursesData.find(c => c.id === id);
+            return c ? c.code : '<span class="text-red-400">Deleted Course</span>';
+        }
+
+        function updateSelectDropdowns() {
+            const studentSelects = ['enr-student', 'att-student', 'mrk-student'];
+            const courseSelects = ['enr-course', 'att-course', 'mrk-course'];
+            
+            const stdOptions = '<option value="">Select Student...</option>' + studentsData.map(s => `<option value="${s.id}">${s.name} (${s.dept})</option>`).join('');
+            const crsOptions = '<option value="">Select Course...</option>' + coursesData.map(c => `<option value="${c.id}">${c.code} - ${c.name}</option>`).join('');
+
+            studentSelects.forEach(id => document.getElementById(id).innerHTML = stdOptions);
+            courseSelects.forEach(id => document.getElementById(id).innerHTML = crsOptions);
+        }
+
+        function updateDashboardStats() {
+            document.getElementById('stat-students').innerText = studentsData.length;
+            document.getElementById('stat-courses').innerText = coursesData.length;
+            document.getElementById('stat-enrollments').innerText = enrollmentsData.length;
+            
+            // Recent enrollments (last 5)
+            const recent = [...enrollmentsData].reverse().slice(0, 5);
+            const tbody = document.getElementById('recent-enrollments-list');
+            if (recent.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-gray-500">No recent activity</td></tr>';
+            } else {
+                tbody.innerHTML = recent.map(e => `
+                    <tr>
+                        <td class="px-6 py-3 font-medium text-gray-800">${getStudentName(e.studentId)}</td>
+                        <td class="px-6 py-3">${getCourseName(e.courseId)}</td>
+                        <td class="px-6 py-3"><span class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs">${e.semester}</span></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        
+        function renderStudents() {
+            const tbody = document.getElementById('table-students');
+            const searchTerm = document.getElementById('search-student').value.toLowerCase();
+            
+            const filtered = studentsData.filter(s => s.name.toLowerCase().includes(searchTerm) || s.dept.toLowerCase().includes(searchTerm));
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">No students found. Add one to get started.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(s => `
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-800">${s.name}</div>
+                        <div class="text-xs text-gray-500">ID: ${s.id.substring(0,6)}...</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600">
+                        <div><i class="fas fa-envelope text-gray-400 mr-1 w-3"></i> ${s.email}</div>
+                        <div class="mt-1"><i class="fas fa-phone text-gray-400 mr-1 w-3"></i> ${s.phone}</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600">${s.dept}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">${s.semester}</span></td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="editStudent('${s.id}')" class="text-blue-500 hover:text-blue-700 mr-3 p-1" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteDocHandler('students', '${s.id}')" class="text-red-400 hover:text-red-600 p-1" title="Delete"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('search-student').addEventListener('input', renderStudents);
+
+        function renderCourses() {
+            const tbody = document.getElementById('table-courses');
+            if (coursesData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-gray-500">No courses available.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = coursesData.map(c => `
+                <tr class="hover:bg-gray-50/50">
+                    <td class="px-4 py-3 font-medium text-gray-800 uppercase">${c.code}</td>
+                    <td class="px-4 py-3 text-gray-600">${c.name}</td>
+                    <td class="px-4 py-3 text-gray-600">${c.credits} CR</td>
+                    <td class="px-4 py-3 text-right">
+                        <button onclick="deleteDocHandler('courses', '${c.id}')" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        
+        function renderEnrollments() {
+            const tbody = document.getElementById('table-enrollments');
+            if (enrollmentsData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-gray-500">No enrollments yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = enrollmentsData.map(e => `
+                <tr class="hover:bg-gray-50/50">
+                    <td class="px-4 py-3 text-gray-800 font-medium">${getStudentName(e.studentId)}</td>
+                    <td class="px-4 py-3 text-gray-600">${getCourseName(e.courseId)}</td>
+                    <td class="px-4 py-3"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">${e.semester}</span></td>
+                    <td class="px-4 py-3 text-right">
+                        <button onclick="deleteDocHandler('enrollments', '${e.id}')" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-unlink"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAttendance() {
+            const tbody = document.getElementById('table-attendance');
+            if (attendanceData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No attendance records found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = attendanceData.map(a => `
+                <tr class="hover:bg-gray-50/50">
+                    <td class="px-6 py-3 text-gray-600 text-xs">${a.date}</td>
+                    <td class="px-6 py-3 font-medium text-gray-800">${getStudentName(a.studentId)}</td>
+                    <td class="px-6 py-3 text-gray-600">${getCourseName(a.courseId)}</td>
+                    <td class="px-6 py-3">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${a.status === 'Present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${a.status}</span>
+                    </td>
+                    <td class="px-6 py-3 text-right">
+                         <button onclick="deleteDocHandler('attendance', '${a.id}')" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderMarks() {
+            const tbody = document.getElementById('table-marks');
+            if (marksData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-6 text-center text-gray-500">No marks recorded yet.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = marksData.map(m => {
+                let gradeColor = 'text-gray-600';
+                if(m.grade === 'A+' || m.grade === 'A') gradeColor = 'text-green-600 font-bold';
+                else if(m.grade === 'F') gradeColor = 'text-red-600 font-bold';
+                
+                return `
+                <tr class="hover:bg-gray-50/50">
+                    <td class="px-6 py-3 font-medium text-gray-800">${getStudentName(m.studentId)}</td>
+                    <td class="px-6 py-3 text-gray-600">${getCourseName(m.courseId)}</td>
+                    <td class="px-6 py-3 text-center text-gray-600">${m.internal}</td>
+                    <td class="px-6 py-3 text-center text-gray-600">${m.exam}</td>
+                    <td class="px-6 py-3 text-center font-semibold text-gray-800">${m.total}</td>
+                    <td class="px-6 py-3 text-center ${gradeColor}">${m.grade}</td>
+                    <td class="px-6 py-3 text-right">
+                         <button onclick="deleteDocHandler('marks', '${m.id}')" class="text-red-400 hover:text-red-600 p-1"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        
+        // Form Submissions
+        document.getElementById('form-student').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUserId) return;
+            const id = document.getElementById('student-id').value;
+            const data = {
+                name: document.getElementById('std-name').value,
+                email: document.getElementById('std-email').value,
+                phone: document.getElementById('std-phone').value,
+                dept: document.getElementById('std-dept').value,
+                semester: document.getElementById('std-sem').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                if(id) {
+                    await updateDoc(getDocRef('students', id), data);
+                    showToast("Student updated successfully", "success");
+                } else {
+                    await addDoc(getColRef('students'), data);
+                    showToast("Student added successfully", "success");
+                }
+                closeModals();
+            } catch(err) {
+                showToast("Error saving student", "error");
+            }
+        });
+
+        document.getElementById('form-course').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUserId) return;
+            const data = {
+                code: document.getElementById('crs-code').value.toUpperCase(),
+                name: document.getElementById('crs-name').value,
+                credits: parseInt(document.getElementById('crs-credits').value),
+                timestamp: new Date().toISOString()
+            };
+            try {
+                await addDoc(getColRef('courses'), data);
+                showToast("Course added successfully", "success");
+                closeModals();
+            } catch(err) { showToast("Error saving course", "error"); }
+        });
+
+        document.getElementById('form-enrollment').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUserId) return;
+            const studentId = document.getElementById('enr-student').value;
+            const courseId = document.getElementById('enr-course').value;
+            
+            // Check if already enrolled
+            if(enrollmentsData.some(en => en.studentId === studentId && en.courseId === courseId)) {
+                showToast("Student is already enrolled in this course.", "warning");
+                return;
+            }
+
+            const data = {
+                studentId, courseId,
+                semester: document.getElementById('enr-sem').value,
+                timestamp: new Date().toISOString()
+            };
+            try {
+                await addDoc(getColRef('enrollments'), data);
+                showToast("Enrollment successful", "success");
+                closeModals();
+            } catch(err) { showToast("Error saving enrollment", "error"); }
+        });
+
+        window.submitAttendance = async function(status) {
+            if(!currentUserId) return;
+            const date = document.getElementById('att-date').value;
+            const courseId = document.getElementById('att-course').value;
+            const studentId = document.getElementById('att-student').value;
+
+            if(!date || !courseId || !studentId) {
+                showToast("Please fill all fields for attendance.", "warning");
+                return;
+            }
+
+            const data = { studentId, courseId, date, status, timestamp: new Date().toISOString() };
+            try {
+                await addDoc(getColRef('attendance'), data);
+                showToast(`Marked ${status} successfully`, "success");
+                document.getElementById('att-student').value = ''; // reset just student for fast input
+            } catch(err) { showToast("Error saving attendance", "error"); }
+        };
+
+        document.getElementById('form-marks').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUserId) return;
+            
+            const studentId = document.getElementById('mrk-student').value;
+            const courseId = document.getElementById('mrk-course').value;
+            const internal = parseInt(document.getElementById('mrk-internal').value) || 0;
+            const exam = parseInt(document.getElementById('mrk-exam').value) || 0;
+            const total = internal + exam;
+            
+            let grade = 'F';
+            if (total >= 90) grade = 'A+';
+            else if (total >= 80) grade = 'A';
+            else if (total >= 70) grade = 'B';
+            else if (total >= 60) grade = 'C';
+            else if (total >= 50) grade = 'D';
+
+            const data = { studentId, courseId, internal, exam, total, grade, timestamp: new Date().toISOString() };
+            
+            try {
+                await addDoc(getColRef('marks'), data);
+                showToast("Marks recorded successfully", "success");
+                closeModals();
+            } catch(err) { showToast("Error saving marks", "error"); }
+        });
+
+        // Global Action Handlers
+        window.deleteDocHandler = async function(collectionName, id) {
+            // Using custom modal instead of alert/confirm
+            if(!currentUserId) return;
+            try {
+                await deleteDoc(getDocRef(collectionName, id));
+                showToast("Record deleted successfully", "success");
+            } catch(err) {
+                showToast("Failed to delete record", "error");
+            }
+        };
+
+        window.editStudent = function(id) {
+            const s = studentsData.find(x => x.id === id);
+            if(!s) return;
+            document.getElementById('student-id').value = s.id;
+            document.getElementById('std-name').value = s.name;
+            document.getElementById('std-email').value = s.email;
+            document.getElementById('std-phone').value = s.phone;
+            document.getElementById('std-dept').value = s.dept;
+            document.getElementById('std-sem').value = s.semester;
+            document.getElementById('modal-student-title').innerText = "Edit Student";
+            openModal('modal-student');
+        };
+
+        
+        // Modal Handlers
+        window.openModal = function(modalId) {
+            const backdrop = document.getElementById('modal-backdrop');
+            const modal = document.getElementById(modalId);
+            backdrop.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            
+            // Animation trick
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                modal.classList.remove('scale-95');
+                modal.classList.add('scale-100');
+            }, 10);
+            
+            // Reset forms if opening (except for edit which pre-fills)
+            if(modalId !== 'modal-student' || !document.getElementById('student-id').value) {
+                const forms = modal.getElementsByTagName('form');
+                if(forms.length > 0) forms[0].reset();
+                if(modalId === 'modal-student') {
+                     document.getElementById('student-id').value = '';
+                     document.getElementById('modal-student-title').innerText = "Add New Student";
+                }
+            }
+        };
+
+        window.closeModals = function() {
+            const backdrop = document.getElementById('modal-backdrop');
+            backdrop.classList.add('opacity-0');
+            
+            document.querySelectorAll('#modal-backdrop > div').forEach(modal => {
+                modal.classList.remove('scale-100');
+                modal.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            });
+            setTimeout(() => backdrop.classList.add('hidden'), 300);
+        };
+
+        // Toast Notification System (replaces alerts)
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-blue-600';
+            let icon = 'fa-info-circle';
+            if(type === 'success') { bg = 'bg-green-600'; icon = 'fa-check-circle'; }
+            if(type === 'error') { bg = 'bg-red-600'; icon = 'fa-exclamation-triangle'; }
+            if(type === 'warning') { bg = 'bg-orange-500'; icon = 'fa-exclamation-circle'; }
+
+            toast.className = `${bg} text-white px-4 py-3 rounded shadow-lg flex items-center gap-3 text-sm font-medium fade-in min-w-[250px]`;
+            toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // Fallback for local UI testing if Firebase config fails
+        function initLocalFallback() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('user-id-display').innerText = "Local Mode";
+            renderStudents();
+            renderCourses();
+        }
+
+    </script>
+</body>
+</html>
